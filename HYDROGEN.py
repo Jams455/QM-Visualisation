@@ -169,9 +169,9 @@ a = 1
 
 
 
-n = 3
-l = 2
-m = 0
+n = 2
+l = 1
+m = -1
 
 
 fig, ax = plt.subplots()
@@ -180,7 +180,7 @@ fig, ax = plt.subplots()
 
 Psi_vals = []
 
-xes = np.linspace(-15, 15, 50)
+xes = np.linspace(-10, 10, 50)
 
 for y in xes:
     psi_vals = []
