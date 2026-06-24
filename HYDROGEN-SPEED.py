@@ -20,13 +20,11 @@ laguerre_coeffs = np.array([
 
 x = np.linspace(-5, 20, 100)
 
-x_arr = np.transpose(np.array([np.pow(x, i)  for i in range(0, len(laguerre_coeffs))]))
-
-print(x_arr)
+# [(x_i)^q -- q][x_i -- i]
+x_arr = np.array([np.pow(x, i)  for i in range(0, len(laguerre_coeffs))])
 
 # [L_q -- q][L_q(x_i) -- i]
-result = np.array([np.dot(laguerre_coeffs, x_arr[i]) for i in range(len(x_arr))])
-result = np.transpose(result)
+result = np.dot(laguerre_coeffs, x_arr)
 
 fig, ax = plt.subplots()
 
