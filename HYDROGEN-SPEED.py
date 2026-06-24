@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+from scipy import special as special
 import numpy as np
 
 
@@ -16,11 +18,23 @@ laguerre_coeffs = np.array([
     [3628800, -36288000, 81648000, -72576000, 31752000, -7620480, 1058400, -86400, 4050, -100, 1]
 ])
 
+x = np.linspace(-5, 20, 100)
 
+x_arr = np.transpose(np.array([np.pow(x, i)  for i in range(0, len(laguerre_coeffs))]))
 
+print(x_arr)
 
+# [L_q -- q][L_q(x_i) -- i]
+result = np.array([np.dot(laguerre_coeffs, x_arr[i]) for i in range(len(x_arr))])
+result = np.transpose(result)
 
+fig, ax = plt.subplots()
 
+for i in range(6):
+    result[i] /= special.factorial(i)
 
+    ax.plot(x, result[i])
 
-print(x)
+ax.set_ylim(-10, 20)
+
+plt.show()
