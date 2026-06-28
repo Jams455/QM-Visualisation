@@ -88,12 +88,7 @@ def P_lm(l, m, x: np.ndarray):
     return p_lm
 
 
-
-
-
-
-
-def Theta(l, m, theta):
+def Theta_lm(l, m, theta):
     m_abs = np.abs(m)
 
     A = np.sqrt(
@@ -108,11 +103,8 @@ def Theta(l, m, theta):
     
     return A * p_lm
 
-def Phi(m, phi):
+def Phi_m(m, phi):
     return np.exp(1j * m * phi) / np.sqrt(2 * np.pi)
-
-def Y_lm(l, m, theta, phi):
-    return Theta(l, m, theta) * Phi(m, phi)
 
 def R_nl(n, l, r):
     global a
@@ -137,63 +129,86 @@ def R_nl(n, l, r):
 
     return r_nl
 
-def Psi(n, l, m, r, theta, phi):
-    assert n >= 1
-    assert 0 <= l < n
-    assert np.abs(m) <= l
 
-    return Y_lm(l, m, theta, phi) * R_nl(n, l, r)
 
+
+xz_max = 40
+
+r_min = 0
+r_max = int(np.sqrt(3 * xz_max**2))
+r_steps = 5000
+r = np.linspace(r_min, r_max, r_steps)
+
+theta_min = 0
+theta_max = np.pi
+theta_steps = 5000
+theta = np.linspace(theta_min, theta_max, theta_steps)
+
+phi_min = 0
+phi_max = 2 * np.pi
+phi_steps = 1000
+phi = np.linspace(phi_min, phi_max, phi_steps)
+
+res = 1000
+res = int((res / 2)) * 2
 
 
 
 a = 1
 
-# result = integrate.quad(lambda x: R_nl(2, 1, x) * np.pow(x, 2), 0, 300)
+n1 = 4
+l1 = 3
+m1 = 1
 
-# print(result)
+n2 = 4
+l2 = 3
+m2 = 1
 
+r_n1_l1 = R_nl(n1, l1, r)
+theta_l1_m1 = Theta_lm(l1, m1, theta)
+phi_m1 = Phi_m(m1, phi)
 
+r_n2_l2 = R_nl(n2, l2, r)
+theta_l2_m2 = Theta_lm(l2, m2, theta)
+phi_m2 = Phi_m(m2, phi)
 
+WFN1_0 = []
+WFN2_0 = []
 
-n = 2
-l = 1
-m = -1
+for z in np.linspace(-xz_max, xz_max, res):
+    WFN1_0_temp = []
+    WFN2_0_temp = []
 
+    for x in np.linspace(-xz_max, xz_max, res):
+        y = 0
 
-fig, ax = plt.subplots()
-
-
-
-Psi_vals = []
-
-xes = np.linspace(-10, 10, 200)
-
-for y in xes:
-    psi_vals = []
-    for z in xes:
-        r = np.sqrt(np.pow(z, 2) + np.pow(y, 2))
+        r_true_val = np.sqrt(np.pow(x, 2) + np.pow(y, 2) + np.pow(z, 2))
+        r_ind = int( r_true_val * r_steps / np.max(r) )
         
-        phi = np.pi / 2
-
-        theta = np.pi / 2
-
-        if z > 0:
-            theta = np.arctan(y / z)
-        if z < 0 and y >= 0:
-            theta = np.arctan(y / z) + np.pi
-        elif z < 0 and y < 0:
-            theta = np.arctan(y / z) - np.pi
+        theta_true_val = np.arccos(z / r_true_val)
+        theta_ind = int( theta_true_val * theta_steps / np.max(theta) )
         
-        psi_vals.append(np.abs(Psi(n, l, m, r, theta, phi))**2)
+        phi_true_val = np.arccos(x / np.abs(x))
+        phi_ind = int( phi_true_val * phi_steps / np.max(phi) )
+        
 
-    Psi_vals.append(psi_vals)
 
-Psi_vals /= np.max(Psi_vals)
+        R_1 = r_n1_l1[r_ind]
+        Theta_1 = theta_l1_m1[theta_ind]
+        Phi_1 = phi_m1[phi_ind]
 
-ax.imshow(Psi_vals, cmap='plasma')
+        R_2 = r_n2_l2[r_ind]
+        Theta_2 = theta_l2_m2[theta_ind]
+        Phi_2 = phi_m2[phi_ind]
+        
+        WFN1_0_temp.append(R_1 * Theta_1 * Phi_1)
+        WFN2_0_temp.append(R_2 * Theta_2 * Phi_2)
+    
+    WFN1_0.append(WFN1_0_temp)
+    WFN2_0.append(WFN2_0_temp)
+
+fix, ax = plt.subplots()
+
+ax.imshow(np.abs(WFN1_0), origin='lower', cmap='inferno')
 
 plt.show()
-
-
-
