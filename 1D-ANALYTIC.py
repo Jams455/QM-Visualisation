@@ -79,3 +79,5 @@ def Update(frame):
 
 ani = animation.FuncAnimation(fig=fig, func=Update, frames=40000, interval=10)
 plt.show()
+
+# Can be optimised by calculating Psi(t) from Psi(t = 0)
