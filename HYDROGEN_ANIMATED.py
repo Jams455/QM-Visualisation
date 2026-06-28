@@ -1,5 +1,6 @@
-import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 from scipy import special as special
+import matplotlib.pyplot as plt
 import numpy as np
 
 LEGENDRE_COEFFS = np.array([
@@ -132,7 +133,7 @@ def R_nl(n, l, r):
 
 
 
-xz_max = 40
+xz_max = 30
 
 r_min = 0
 r_max = int(np.sqrt(3 * xz_max**2))
@@ -155,14 +156,20 @@ res = int((res / 2)) * 2
 
 
 a = 1
+hbar = 1
 
 n1 = 4
-l1 = 3
-m1 = 1
+l1 = 2
+m1 = 0
+c1 = 3
 
-n2 = 4
-l2 = 3
+n2 = 2
+l2 = 1
 m2 = 1
+c2 = 1
+
+#c1 /= np.sqrt(c1**2 + c2**2)
+#c2 /= np.sqrt(c1**2 + c2**2)
 
 r_n1_l1 = R_nl(n1, l1, r)
 theta_l1_m1 = Theta_lm(l1, m1, theta)
@@ -175,9 +182,12 @@ phi_m2 = Phi_m(m2, phi)
 WFN1_0 = []
 WFN2_0 = []
 
+WFN = []
+
 for z in np.linspace(-xz_max, xz_max, res):
     WFN1_0_temp = []
     WFN2_0_temp = []
+    WFN_temp = []
 
     for x in np.linspace(-xz_max, xz_max, res):
         y = 0
@@ -203,13 +213,19 @@ for z in np.linspace(-xz_max, xz_max, res):
         
         WFN1_0_temp.append(R_1 * Theta_1 * Phi_1)
         WFN2_0_temp.append(R_2 * Theta_2 * Phi_2)
+        WFN_temp.append(R_1 * Theta_1 * Phi_1 + R_2 * Theta_2 * Phi_2)
     
     WFN1_0.append(WFN1_0_temp)
     WFN2_0.append(WFN2_0_temp)
+    WFN.append(WFN_temp)
 
-fix, ax = plt.subplots()
+fig, ax = plt.subplots()
 
-ax.imshow(np.abs(WFN1_0), origin='lower', cmap='inferno')
+WFN1_0 = np.array(WFN1_0)
+WFN2_0 = np.array(WFN2_0)
+WFN = np.array(WFN)
+
+img = ax.imshow(np.abs(WFN)**2, origin='lower', cmap='inferno')
 
 #ax.set_xlabel("x")
 #ax.set_ylabel("z")
@@ -220,4 +236,20 @@ ax.set_xticks([])
 ax.set_yticklabels([])
 ax.set_yticks([])
 
+
+
+def Update(frame):
+    E1 = 1
+    E2 = 3
+
+    time_dep_prefactor1 = np.exp(- 1j * E1 * frame / hbar / 30)
+    time_dep_prefactor2 = np.exp(- 1j * E2 * frame / hbar / 30)
+
+    WFN = (c1 * WFN1_0 * time_dep_prefactor1 + c2 * WFN2_0 * time_dep_prefactor2) / 1.2
+
+    img.set_data(np.abs(WFN)**2)
+    return [img]
+
+
+ani = animation.FuncAnimation(fig=fig, func=Update, frames=4000, interval=40)
 plt.show()

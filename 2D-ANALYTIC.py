@@ -55,7 +55,7 @@ for x in xes:
 
 fig, ax = plt.subplots()
 
-img = ax.imshow(p, cmap='plasma')
+img = ax.imshow(p, cmap='inferno')
 
 def Update(frame):
     p = []
