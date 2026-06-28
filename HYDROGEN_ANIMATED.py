@@ -156,20 +156,28 @@ res = int((res / 2)) * 2
 
 a = 1
 
-n = 4
-l = 3
-m = 1
+n1 = 4
+l1 = 3
+m1 = 1
 
+n2 = 4
+l2 = 3
+m2 = 1
 
-r_nl = R_nl(n, l, r)
-theta_lm = Theta_lm(l, m, theta)
-phi_m = Phi_m(m, phi)
+r_n1_l1 = R_nl(n1, l1, r)
+theta_l1_m1 = Theta_lm(l1, m1, theta)
+phi_m1 = Phi_m(m1, phi)
 
+r_n2_l2 = R_nl(n2, l2, r)
+theta_l2_m2 = Theta_lm(l2, m2, theta)
+phi_m2 = Phi_m(m2, phi)
 
-WFN = []
+WFN1_0 = []
+WFN2_0 = []
 
 for z in np.linspace(-xz_max, xz_max, res):
-    WFN_temp = []
+    WFN1_0_temp = []
+    WFN2_0_temp = []
 
     for x in np.linspace(-xz_max, xz_max, res):
         y = 0
@@ -185,17 +193,23 @@ for z in np.linspace(-xz_max, xz_max, res):
         
 
 
-        R = r_nl[r_ind]
-        Theta = theta_lm[theta_ind]
-        Phi = phi_m[phi_ind]
-        
-        WFN_temp.append(R * Theta * Phi)
+        R_1 = r_n1_l1[r_ind]
+        Theta_1 = theta_l1_m1[theta_ind]
+        Phi_1 = phi_m1[phi_ind]
 
-    WFN.append(WFN_temp)
+        R_2 = r_n2_l2[r_ind]
+        Theta_2 = theta_l2_m2[theta_ind]
+        Phi_2 = phi_m2[phi_ind]
+        
+        WFN1_0_temp.append(R_1 * Theta_1 * Phi_1)
+        WFN2_0_temp.append(R_2 * Theta_2 * Phi_2)
+    
+    WFN1_0.append(WFN1_0_temp)
+    WFN2_0.append(WFN2_0_temp)
 
 fix, ax = plt.subplots()
 
-ax.imshow(np.abs(WFN), origin='lower', cmap='inferno')
+ax.imshow(np.abs(WFN1_0), origin='lower', cmap='inferno')
 
 #ax.set_xlabel("x")
 #ax.set_ylabel("z")
