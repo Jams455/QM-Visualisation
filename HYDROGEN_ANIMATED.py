@@ -88,8 +88,7 @@ def P_lm(l, m, x: np.ndarray):
 
     return p_lm
 
-
-def Theta_lm(l, m, theta):
+def Theta_lm(l, m, theta: np.ndarray):
     m_abs = np.abs(m)
 
     A = np.sqrt(
@@ -104,10 +103,10 @@ def Theta_lm(l, m, theta):
     
     return A * p_lm
 
-def Phi_m(m, phi):
+def Phi_m(m, phi: np.ndarray):
     return np.exp(1j * m * phi) / np.sqrt(2 * np.pi)
 
-def R_nl(n, l, r):
+def R_nl(n, l, r: np.ndarray):
     global a
     A = np.sqrt(
         np.pow(2 / (n * a), 3 ) *
@@ -133,7 +132,7 @@ def R_nl(n, l, r):
 
 
 
-xz_max = 30
+xz_max = 40
 
 r_min = 0
 r_max = int(np.sqrt(3 * xz_max**2))
@@ -150,7 +149,7 @@ phi_max = 2 * np.pi
 phi_steps = 1000
 phi = np.linspace(phi_min, phi_max, phi_steps)
 
-res = 500
+res = 750
 res = int((res / 2)) * 2
 
 
@@ -158,13 +157,13 @@ res = int((res / 2)) * 2
 a = 1
 hbar = 1
 
-n1 = 4
+n1 = 6
 l1 = 2
-m1 = 0
-c1 = 3
+m1 = 1
+c1 = 2
 
-n2 = 2
-l2 = 1
+n2 = 5
+l2 = 3
 m2 = 1
 c2 = 1
 
@@ -245,11 +244,11 @@ def Update(frame):
     time_dep_prefactor1 = np.exp(- 1j * E1 * frame / hbar / 30)
     time_dep_prefactor2 = np.exp(- 1j * E2 * frame / hbar / 30)
 
-    WFN = (c1 * WFN1_0 * time_dep_prefactor1 + c2 * WFN2_0 * time_dep_prefactor2) / 1.2
+    WFN = (c1 * WFN1_0 * time_dep_prefactor1 + c2 * WFN2_0 * time_dep_prefactor2) / 1.4
 
     img.set_data(np.abs(WFN)**2)
     return [img]
 
 
-ani = animation.FuncAnimation(fig=fig, func=Update, frames=4000, interval=40)
+ani = animation.FuncAnimation(fig=fig, func=Update, frames=4000, interval=30)
 plt.show()

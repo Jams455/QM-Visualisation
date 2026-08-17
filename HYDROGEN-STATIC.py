@@ -45,50 +45,66 @@ DIFFERENTIATE_MATRIX = np.array([
 ])
 
 def L_q(q, x: np.ndarray):
-    x_arr = np.array([np.pow(x, i)  for i in range(0, len(LAGUERRE_COEFFS))])
+    result = 0.0
 
-    return np.dot(LAGUERRE_COEFFS[q], x_arr)
+    for i, Laguerre_coeffs in enumerate(LAGUERRE_COEFFS[q]):
+        result += np.pow(x, i) * Laguerre_coeffs
+
+    return result
 
 def L_pq(p, q, x: np.ndarray):
-    x_arr = np.array([np.pow(x, i)  for i in range(0, len(LAGUERRE_COEFFS))])
+    if p + q >= len(LAGUERRE_COEFFS):
+        raise ValueError("p + q exceeds available Laguerre polynomial order")
 
-    diff_n_mat = np.linalg.matrix_power(DIFFERENTIATE_MATRIX, q)
+    d_dx_matrix = np.linalg.matrix_power(DIFFERENTIATE_MATRIX, q)
 
-    dxarr_dx = np.dot(diff_n_mat, x_arr)
+    prefactor_arr = np.dot(LAGUERRE_COEFFS[p+q], d_dx_matrix)
 
-    assert p + q <= len(LAGUERRE_COEFFS)
+    result = 0.0
 
-    return np.multiply(np.pow(-1, q), np.dot(LAGUERRE_COEFFS[p+q], dxarr_dx))
+    for i, prefactor_coeffs in enumerate(prefactor_arr):
+        result += np.pow(x, i) * prefactor_coeffs
+
+    return (-1)**q * result
 
 def P_l(l, x: np.ndarray):
-    x_arr = np.array([np.pow(x, i)  for i in range(0, len(LEGENDRE_COEFFS))])
+    result = 0.0
 
-    return np.dot(LEGENDRE_COEFFS[l], x_arr)
+    for i, legendre_coeffs in enumerate(LEGENDRE_COEFFS[l]):
+        result += np.pow(x, i) * legendre_coeffs
+
+    return result
 
 def P_lm(l, m, x: np.ndarray):
     m_abs = np.abs(m)
 
-    x_arr = np.array([np.pow(x, i)  for i in range(0, len(LEGENDRE_COEFFS))])
-
     diff_mat = np.linalg.matrix_power(DIFFERENTIATE_MATRIX, m_abs)
 
-    dxarr_dx = np.dot(diff_mat, x_arr)
 
-    dmPl_dxm = np.dot(LEGENDRE_COEFFS[l], dxarr_dx)
+    prefactor_vec = np.dot(LEGENDRE_COEFFS[l], diff_mat)
+
+    result = 0.0
+
+    for i, prefactor_val in enumerate(prefactor_vec):
+        result += np.pow(x, i) * prefactor_val
+
+
 
     prefactor = np.pow(-1, m_abs)
 
     if m < 0:
         prefactor = 1
 
-    p_lm = np.multiply(prefactor, np.pow(1-np.pow(x, 2), m_abs / 2))
+    prefactor_func = prefactor * np.pow(np.maximum(0.0, 1-np.pow(x, 2)), m_abs / 2)
 
-    p_lm = np.multiply(p_lm, dmPl_dxm)
-
-    return p_lm
+    return prefactor_func * result
 
 
-def Theta_lm(l, m, theta):
+
+def Theta_lm(l, m, theta: np.ndarray):
+    if abs(m) > l:
+        raise ValueError("m out of bounds. Should satisfy |m| <= l") 
+
     m_abs = np.abs(m)
 
     A = np.sqrt(
@@ -103,13 +119,18 @@ def Theta_lm(l, m, theta):
     
     return A * p_lm
 
-def Phi_m(m, phi):
+def Phi_m(m, phi: np.ndarray):
     return np.exp(1j * m * phi) / np.sqrt(2 * np.pi)
 
-def R_nl(n, l, r):
-    global a
+def R_nl(n, l, r: np.ndarray, a_0):
+    if n < 1:
+        raise ValueError("n out of bounds. Should satisfy n >= 1")
+    
+    if l < 0 or l >= n:
+        raise ValueError("l out of bounds. Should satisfy 0 <= l < n")
+
     A = np.sqrt(
-        np.pow(2 / (n * a), 3 ) *
+        np.pow(2 / (n * a_0), 3 ) *
         special.factorial( n - l - 1 ) / 
         ( 2 * n * np.pow( special.factorial(n + l), 3 ) )
     )
@@ -117,7 +138,7 @@ def R_nl(n, l, r):
     p = n - l - 1
     q = 2 * l + 1
 
-    rho = 2 * r / (n * a)
+    rho = 2 * r / (n * a_0)
     
     r_nl = L_pq(p, q, rho)
 
@@ -132,78 +153,40 @@ def R_nl(n, l, r):
 
 
 
-xz_max = 40
+a_0 = 1
 
-r_min = 0
-r_max = int(np.sqrt(3 * xz_max**2))
-r_steps = 5000
-r = np.linspace(r_min, r_max, r_steps)
+AXIS_LIM = 50
+RES = 250
 
-theta_min = 0
-theta_max = np.pi
-theta_steps = 5000
-theta = np.linspace(theta_min, theta_max, theta_steps)
+x = np.linspace(-AXIS_LIM, AXIS_LIM, RES)
+y = np.linspace(-AXIS_LIM, AXIS_LIM, RES)
+z = np.linspace(-AXIS_LIM, AXIS_LIM, RES)
 
-phi_min = 0
-phi_max = 2 * np.pi
-phi_steps = 1000
-phi = np.linspace(phi_min, phi_max, phi_steps)
+Y, X, Z = np.meshgrid(x, y, z)
 
-res = 500
-res = int((res / 2)) * 2
+R = np.sqrt(np.pow(X, 2) + np.pow(Y, 2) + np.pow(Z, 2))
 
+THETA = np.zeros_like(R)
+mask = R > 0
+THETA[mask] = np.arccos(Z[mask] / R[mask])
+
+PHI = np.mod(np.atan2(Y, X), 2*np.pi)
 
 
-a = 1
-
-n = 4
-l = 3
-m = 1
+n = 5
+l = 1
+m = -1
 
 
-r_nl = R_nl(n, l, r)
-theta_lm = Theta_lm(l, m, theta)
-phi_m = Phi_m(m, phi)
 
 
-WFN = []
+Psi = R_nl(n, l, R, a_0) * Theta_lm(l, m, THETA) * Phi_m(m, PHI)
 
-for z in np.linspace(-xz_max, xz_max, res):
-    WFN_temp = []
-
-    for x in np.linspace(-xz_max, xz_max, res):
-        y = 0
-
-        r_true_val = np.sqrt(np.pow(x, 2) + np.pow(y, 2) + np.pow(z, 2))
-        r_ind = int( r_true_val * r_steps / np.max(r) )
-        
-        theta_true_val = np.arccos(z / r_true_val)
-        theta_ind = int( theta_true_val * theta_steps / np.max(theta) )
-        
-        phi_true_val = np.arccos(x / np.abs(x))
-        phi_ind = int( phi_true_val * phi_steps / np.max(phi) )
-        
+Psi_2D = Psi[:, RES//2, :]
 
 
-        R = r_nl[r_ind]
-        Theta = theta_lm[theta_ind]
-        Phi = phi_m[phi_ind]
-        
-        WFN_temp.append(R * Theta * Phi)
+print(np.shape(Psi_2D))
 
-    WFN.append(WFN_temp)
-
-fix, ax = plt.subplots()
-
-ax.imshow(np.abs(WFN), origin='lower', cmap='inferno')
-
-#ax.set_xlabel("x")
-#ax.set_ylabel("z")
-
-ax.set_xticklabels([])
-ax.set_xticks([])
-
-ax.set_yticklabels([])
-ax.set_yticks([])
-
+plt.figure()
+plt.imshow(np.abs(Psi_2D), cmap='inferno', extent=[-AXIS_LIM, AXIS_LIM, -AXIS_LIM, AXIS_LIM], origin='lower')
 plt.show()
