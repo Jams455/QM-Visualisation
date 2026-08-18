@@ -153,17 +153,18 @@ def R_nl(n, l, r: np.ndarray, a_0):
 # ----------------------------- Inputs ----------------------------- #
 # ------------------------------------------------------------------ #
 
-psi_1_nlm = (2, 1, 1)
-c1 = 1 / np.sqrt(2)
+a_0 = 1                     # Bohr radius
+hbar = 0.1                    # Reduced Planck constant
 
-psi_2_nlm = (3, 0, 0)
-c2 = 1 / np.sqrt(2)
+RES = 250                   # Number of points to plot along each axis
+AXIS_LIM = 20               # Extent of each axis
+TIME_STEP = 10              # Time in ms between animation frames
 
-AXIS_LIM = 10
-RES = 125
+psi_1_nlm = (4, 1, 1)       # Orbital 1 quantum numbers
+c1 =  1.0 + 0.0j            # Orbital 1 coefficient
 
-a_0 = 1
-hbar = 1
+psi_2_nlm = (3, 2, 0)       # Orbital 2 quantum numbers
+c2 =  1.0 + 0.0j            # Orbital 2 coefficient
 
 # ------------------------------------------------------------------ #
 # --------------------- Coordinate conversions --------------------- #
@@ -198,13 +199,17 @@ psi_2_2D = psi_2[:, RES//2, :]
 
 Psi_2D = c1 * psi_1_2D + c2 * psi_2_2D
 
+prob_density = np.abs(Psi_2D)**2
+max_prob_density = np.max(prob_density)
+
 # ------------------------------------------------------------------ #
 # ---------------------------- Plotting ---------------------------- #
 # ------------------------------------------------------------------ #
 
 fig, ax = plt.subplots()
 
-img = ax.imshow(np.abs(Psi_2D)**2, cmap='inferno', extent=[-AXIS_LIM, AXIS_LIM, -AXIS_LIM, AXIS_LIM], origin='lower')
+img = ax.imshow(prob_density, cmap='inferno', extent=[-AXIS_LIM, AXIS_LIM, -AXIS_LIM, AXIS_LIM], origin='lower')
+img.set_clim(vmin=0, vmax=max_prob_density)
 
 ax.set_xticklabels([])
 ax.set_xticks([])
@@ -220,14 +225,17 @@ E_psi1 = -13.6 / (psi_1_nlm[0]**2)
 E_psi2 = -13.6 / (psi_2_nlm[0]**2)
 
 def Update(frame):
-    time_dep_prefactor1 = np.exp(- (1j/hbar) * E_psi1 * frame / 70)
-    time_dep_prefactor2 = np.exp(- (1j/hbar) * E_psi2 * frame / 70)
+    time_dep_prefactor1 = np.exp(- (1j/hbar) * E_psi1 * frame * TIME_STEP / 1000)
+    time_dep_prefactor2 = np.exp(- (1j/hbar) * E_psi2 * frame * TIME_STEP / 1000)
 
     Psi_2D = c1 * time_dep_prefactor1 * psi_1_2D + c2 * time_dep_prefactor2 * psi_2_2D
 
-    img.set_data(np.abs(Psi_2D)**2)
+    prob_density = np.abs(Psi_2D)**2
+    max_prob_density = np.max(prob_density)
+
+    img.set_data(prob_density)
     return [img]
 
 
-ani = animation.FuncAnimation(fig=fig, func=Update, frames=4000, interval=30)
+ani = animation.FuncAnimation(fig=fig, func=Update, frames=4000, interval=TIME_STEP)
 plt.show()
