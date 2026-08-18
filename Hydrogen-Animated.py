@@ -160,7 +160,7 @@ RES = 250                   # Number of points to plot along each axis
 AXIS_LIM = 20               # Extent of each axis
 TIME_STEP = 10              # Time in ms between animation frames
 
-psi_1_nlm = (4, 1, 1)       # Orbital 1 quantum numbers
+psi_1_nlm = (4, 2, 1)       # Orbital 1 quantum numbers
 c1 =  1.0 + 0.0j            # Orbital 1 coefficient
 
 psi_2_nlm = (3, 2, 0)       # Orbital 2 quantum numbers
