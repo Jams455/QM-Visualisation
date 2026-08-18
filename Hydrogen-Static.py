@@ -155,9 +155,9 @@ def R_nl(n, l, r: np.ndarray, a_0):
 a_0 = 1                     # Bohr radius
 
 RES = 250                   # Number of points to plot along each axis
-AXIS_LIM = 13               # Extent of each axis
+AXIS_LIM = 40               # Extent of each axis
 
-(n, l, m) = (5, 1, -1)      # Quantum numbers of orbital to plot
+(n, l, m) = (4, 3, 3)      # Quantum numbers of orbital to plot
 
 # ------------------------------------------------------------------ #
 # ------------------------ Coord Conversions ----------------------- #
@@ -192,7 +192,15 @@ max_prob_density = np.max(prob_density)
 # ---------------------------- Plotting ---------------------------- #
 # ------------------------------------------------------------------ #
 
-plt.figure()
-img = plt.imshow(np.abs(Psi_2D)**2, cmap='inferno', extent=[-AXIS_LIM, AXIS_LIM, -AXIS_LIM, AXIS_LIM], origin='lower')
+fig, ax = plt.subplots()
+img = ax.imshow(np.abs(Psi_2D)**2, cmap='inferno', extent=[-AXIS_LIM, AXIS_LIM, -AXIS_LIM, AXIS_LIM], origin='lower')
 img.set_clim(vmin=0, vmax=max_prob_density)
-plt.show()
+
+ax.set_xticklabels([])
+ax.set_xticks([])
+
+ax.set_yticklabels([])
+ax.set_yticks([])
+
+plt.savefig(f"({n}, {l}, {m})")
+# plt.show()
