@@ -239,3 +239,6 @@ def Update(frame):
 
 ani = animation.FuncAnimation(fig=fig, func=Update, frames=4000, interval=TIME_STEP)
 plt.show()
+
+
+# Future work: Make it so can superpose more than 2 orbitals using a dictionary of wavefunctions as in 2D-ParticleInBox.py
