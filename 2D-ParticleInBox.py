@@ -33,7 +33,7 @@ def Psi_nx_ny_x_y_0(nx, ny, x, y, lx, ly, c_nx_ny):
 
 LX = 1              # Length of box in x-direction
 LY = 1              # Length of box in y-direction
-M = 300             # Particle mass
+M = 200             # Particle mass
 HBAR = 1            # Reduced Planck constant
 RES = 250           # Number of points plotted along each axis
 TIME_STEP = 10      # Time in ms between animation frames
@@ -41,9 +41,9 @@ TIME_STEP = 10      # Time in ms between animation frames
 c_nx_ny = {}        # Coefficient of each stationary state in superposition (dict key = (n_x, n_y), value = coeff)
 
 c_nx_ny[(6, 3)] =  1.0 + 0.0j
-c_nx_ny[(3, 6)] =  1.0 - 5.0j
-# c_nx_ny[(4, 3)] =  1.0 - 1.0j
-# c_nx_ny[(5, 2)] =  0.0 + 1.0j
+c_nx_ny[(3, 6)] =  1.0 + 0.0j
+c_nx_ny[(4, 3)] =  1.0 - 1.0j
+c_nx_ny[(3, 4)] =  1.0 + 1.0j
 # c_nx_ny[(7, 9)] =  1.0 + 0.0j
 # c_nx_ny[(9, 3)] =  1.0 + 0.0j
 
