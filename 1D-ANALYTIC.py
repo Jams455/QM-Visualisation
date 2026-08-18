@@ -1,19 +1,6 @@
-import numpy as np
-import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-import time
-
-def integrate(x, y, z):
-    hx = x[1] - x[0]
-    hy = y[1] - y[0]
-    
-    total = 0
-
-    for i in range(len(x)):
-        for j in range(len(y)):
-            total += z[i][j] * hx * hy
-
-    return total
+import matplotlib.pyplot as plt
+import numpy as np
 
 def integrate(x, y):
     h = (x[-1] - x[0]) / (len(x) - 1)
@@ -22,49 +9,96 @@ def integrate(x, y):
 
     return 0.5 * h * y_tot
 
-def Psi_x_t(x, t):
-    psi_x_t = 0+0j
+def Psi_n_x_0(n, x, l, c):
+    if n < 1:
+        raise ValueError("n out of bounds. Should satisfy n >= 1.")
+    if n != int(n):
+        raise ValueError("n must be an integer.")
 
-    for n in range(1, len(c)+1):
-        s = np.sin(n * np.pi * x / L)
+    psi_n_x_0 = c * np.sin(n * np.pi * x / l) * np.sqrt(2 / l)
 
-        e = np.exp(-1j * hbar * (n**2) * (np.pi**2) * t / (2*m) )
+    return psi_n_x_0
 
-        psi_x_t += c[n-1] * s * e
+# ------------------------------------------------------------------ #
+# ----------------------------- Inputs ----------------------------- #
+# ------------------------------------------------------------------ #
 
-    return psi_x_t
+L = 1               # Length of box
+M = 500             # Particle mass
+HBAR = 1            # Reduced Planck constant
+RES = 1000          # Number of points plotted
+TIME_STEP = 10      # Time in ms between animation frames
 
-c = np.array([1, 0, 0, 1, 1, 0, 1, 0, 1])
+c_n = {}            # Coefficient of each stationary state in superposition (dict key = n, value = coeff)
 
-L = 1
-hbar = 0.6
-m = 1
+c_n[1] = 1.0 + 0.0j
+c_n[3] = 1.0 + 0.0j
+c_n[4] = 1.0 - 1.0j
+c_n[5] = 0.0 + 1.0j
+c_n[7] = 1.0 + 0.0j
+c_n[9] = 1.0 + 0.0j
 
+# ------------------------------------------------------------------ #
+# --------------------- Normalise Coefficients --------------------- #
+# ------------------------------------------------------------------ #
 
+c_n_magnitude = 0.0
 
+for z in c_n.values():
+    c_n_magnitude += np.abs(z)**2
 
+if c_n_magnitude <= 0:
+    raise ValueError("Coefficients not valid")
 
+c_n_magnitude = np.sqrt(c_n_magnitude)
 
-xes = np.linspace(0, L, 1000)
+c_n = {key: value / c_n_magnitude for key, value in c_n.items()}
 
-p = np.abs(Psi_x_t(xes, 0))**2
-A = integrate(xes, p)
-p /= A
+# ------------------------------------------------------------------ #
+# ------------- Calc Wavefuncs and Check Normalisation ------------- #
+# ------------------------------------------------------------------ #
 
-MAXY = 0
+X = np.linspace(0, L, RES)
+
+wavefunctions = {}
+
+print("\nNormalisation check:")
+for key, c in c_n.items():
+    wfn = Psi_n_x_0(key, X, L, c)
+
+    wfn_integral = integrate(X, np.abs(wfn/c)**2)
+
+    print(f"|Psi_n={key}|**2 integral over 0<=x<=L: {wfn_integral}")
+
+    wavefunctions[key] = wfn
+print()
+
+psi_x_0 = sum(wavefunctions.values())
+prob_density = np.abs(psi_x_0) ** 2
+MAXY = np.max(prob_density)
+
+# ------------------------------------------------------------------ #
+# -------------------------- Create Plot --------------------------- #
+# ------------------------------------------------------------------ #
 
 fig, ax = plt.subplots()
 
-ax.set_ylim(0, 10)
+ax.set_ylim(0, MAXY)
 
-line, = ax.plot(xes, p)
+line, = ax.plot(X, prob_density)
 
 def Update(frame):
-    p = np.abs(Psi_x_t(xes, frame/10000))**2
-    A = integrate(xes, p)
-    p /= A
+    for n, c in c_n.items():
+        E_n = n**2 * np.pi**2 * HBAR**2 / ( 2 * M * L**2 )
 
-    temp_max = np.max(p)
+        time_evolution_factor = np.exp(-1j * E_n * (TIME_STEP/1000) / HBAR)
+
+        wavefunctions[key] *= time_evolution_factor
+
+    psi_x_t = sum(wavefunctions.values())
+    prob_density = np.abs(psi_x_t) ** 2
+
+    temp_max = np.max(prob_density)
 
     global MAXY
     if temp_max > MAXY:
@@ -72,12 +106,10 @@ def Update(frame):
 
     ax.set_ylim(0, MAXY)
 
-    line.set_ydata(p)
+    line.set_ydata(prob_density)
 
     return line
 
 
-ani = animation.FuncAnimation(fig=fig, func=Update, frames=40000, interval=10)
+ani = animation.FuncAnimation(fig=fig, func=Update, frames=40000, interval=TIME_STEP)
 plt.show()
-
-# Can be optimised by calculating Psi(t) from Psi(t = 0)
