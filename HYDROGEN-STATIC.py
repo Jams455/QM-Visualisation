@@ -99,8 +99,6 @@ def P_lm(l, m, x: np.ndarray):
 
     return prefactor_func * result
 
-
-
 def Theta_lm(l, m, theta: np.ndarray):
     if abs(m) > l:
         raise ValueError("m out of bounds. Should satisfy |m| <= l") 
@@ -150,13 +148,20 @@ def R_nl(n, l, r: np.ndarray, a_0):
 
     return r_nl
 
+# ------------------------------------------------------------------ #
+# ----------------------------- Inputs ----------------------------- #
+# ------------------------------------------------------------------ #
 
+a_0 = 1                     # Bohr radius
 
+RES = 250                   # Number of points plotted along each axis
+AXIS_LIM = 50               # Size of volume
 
-a_0 = 1
+(n, l, m) = (5, 1, -1)      # Quantum numbers of orbital to plot
 
-AXIS_LIM = 50
-RES = 250
+# ------------------------------------------------------------------ #
+# ------------------------ Coord Conversions ----------------------- #
+# ------------------------------------------------------------------ #
 
 x = np.linspace(-AXIS_LIM, AXIS_LIM, RES)
 y = np.linspace(-AXIS_LIM, AXIS_LIM, RES)
@@ -172,20 +177,17 @@ THETA[mask] = np.arccos(Z[mask] / R[mask])
 
 PHI = np.mod(np.atan2(Y, X), 2*np.pi)
 
-
-n = 5
-l = 1
-m = -1
-
-
-
+# ------------------------------------------------------------------ #
+# ----------------------- Wavefunction Calcs ----------------------- #
+# ------------------------------------------------------------------ #
 
 Psi = R_nl(n, l, R, a_0) * Theta_lm(l, m, THETA) * Phi_m(m, PHI)
 
 Psi_2D = Psi[:, RES//2, :]
 
-
-print(np.shape(Psi_2D))
+# ------------------------------------------------------------------ #
+# ---------------------------- Plotting ---------------------------- #
+# ------------------------------------------------------------------ #
 
 plt.figure()
 plt.imshow(np.abs(Psi_2D), cmap='inferno', extent=[-AXIS_LIM, AXIS_LIM, -AXIS_LIM, AXIS_LIM], origin='lower')
