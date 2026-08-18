@@ -154,8 +154,8 @@ def R_nl(n, l, r: np.ndarray, a_0):
 
 a_0 = 1                     # Bohr radius
 
-RES = 250                   # Number of points plotted along each axis
-AXIS_LIM = 50               # Size of volume
+RES = 250                   # Number of points to plot along each axis
+AXIS_LIM = 13               # Extent of each axis
 
 (n, l, m) = (5, 1, -1)      # Quantum numbers of orbital to plot
 
@@ -185,10 +185,14 @@ Psi = R_nl(n, l, R, a_0) * Theta_lm(l, m, THETA) * Phi_m(m, PHI)
 
 Psi_2D = Psi[:, RES//2, :]
 
+prob_density = np.abs(Psi_2D)**2
+max_prob_density = np.max(prob_density)
+
 # ------------------------------------------------------------------ #
 # ---------------------------- Plotting ---------------------------- #
 # ------------------------------------------------------------------ #
 
 plt.figure()
-plt.imshow(np.abs(Psi_2D), cmap='inferno', extent=[-AXIS_LIM, AXIS_LIM, -AXIS_LIM, AXIS_LIM], origin='lower')
+img = plt.imshow(np.abs(Psi_2D)**2, cmap='inferno', extent=[-AXIS_LIM, AXIS_LIM, -AXIS_LIM, AXIS_LIM], origin='lower')
+img.set_clim(vmin=0, vmax=max_prob_density)
 plt.show()
