@@ -1,5 +1,6 @@
-import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 from scipy import special as special
+import matplotlib.pyplot as plt
 import numpy as np
 
 LEGENDRE_COEFFS = np.array([
@@ -155,9 +156,11 @@ def R_nl(n, l, r: np.ndarray, a_0):
 a_0 = 1                     # Bohr radius
 
 RES = 250                   # Number of points to plot along each axis
-AXIS_LIM = 40               # Extent of each axis
+AXIS_LIM = 10               # Extent of each axis
+FRAMES = 4000               # Number of frames to animate
+TIME_STEP = 10              # Time in ms between animation frames
 
-(n, l, m) = (4, 3, 3)      # Quantum numbers of orbital to plot
+(n, l, m) = (2, 1, 0)      # Quantum numbers of orbital to plot
 
 # ------------------------------------------------------------------ #
 # ------------------------ Coord Conversions ----------------------- #
@@ -183,17 +186,18 @@ PHI = np.mod(np.atan2(Y, X), 2*np.pi)
 
 Psi = R_nl(n, l, R, a_0) * Theta_lm(l, m, THETA) * Phi_m(m, PHI)
 
-Psi_2D = Psi[:, RES//2, :]
-
-prob_density = np.abs(Psi_2D)**2
+prob_density = np.abs(Psi)**2
 max_prob_density = np.max(prob_density)
+
+prob_density_2d = prob_density[:, 0, :]
 
 # ------------------------------------------------------------------ #
 # ---------------------------- Plotting ---------------------------- #
 # ------------------------------------------------------------------ #
 
 fig, ax = plt.subplots()
-img = ax.imshow(np.abs(Psi_2D)**2, cmap='inferno', extent=[-AXIS_LIM, AXIS_LIM, -AXIS_LIM, AXIS_LIM], origin='lower')
+
+img = ax.imshow(prob_density_2d, cmap='inferno', extent=[-AXIS_LIM, AXIS_LIM, -AXIS_LIM, AXIS_LIM], origin='lower')
 img.set_clim(vmin=0, vmax=max_prob_density)
 
 ax.set_xticklabels([])
@@ -202,5 +206,27 @@ ax.set_xticks([])
 ax.set_yticklabels([])
 ax.set_yticks([])
 
-# plt.savefig(f"({n}, {l}, {m})")
+# ------------------------------------------------------------------ #
+# --------------------------- Animating ---------------------------- #
+# ------------------------------------------------------------------ #
+
+def Update(frame):
+    res = RES - 1
+    curr_slice = 0
+
+    lower = np.mod(frame, res)
+    upper = np.mod(frame, res*2)
+
+    if lower == upper:
+        curr_slice = lower
+    else:
+        curr_slice = res - lower
+
+    prob_density_2d = prob_density[:, curr_slice, :]
+    
+    img.set_data(prob_density_2d)
+    return [img]
+
+
+ani = animation.FuncAnimation(fig=fig, func=Update, frames=FRAMES, interval=TIME_STEP)
 plt.show()
