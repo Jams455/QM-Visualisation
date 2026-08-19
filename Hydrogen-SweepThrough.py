@@ -156,11 +156,11 @@ def R_nl(n, l, r: np.ndarray, a_0):
 a_0 = 1                     # Bohr radius
 
 RES = 250                   # Number of points to plot along each axis
-AXIS_LIM = 10               # Extent of each axis
+AXIS_LIM = 40               # Extent of each axis
 FRAMES = 4000               # Number of frames to animate
 TIME_STEP = 10              # Time in ms between animation frames
 
-(n, l, m) = (2, 1, 0)      # Quantum numbers of orbital to plot
+(n, l, m) = (4, 3, 1)      # Quantum numbers of orbital to plot
 
 # ------------------------------------------------------------------ #
 # ------------------------ Coord Conversions ----------------------- #
